@@ -1,0 +1,94 @@
+import sqlite3
+from datetime import datetime
+
+# Create the database and tasks table
+conn = sqlite3.connect('task_manager.db')
+c = conn.cursor()
+c.execute('''CREATE TABLE IF NOT EXISTS tasks
+             (id INTEGER PRIMARY KEY AUTOINCREMENT,
+             title TEXT NOT NULL,
+             description TEXT,
+             due_date DATE,
+             priority INTEGER,
+             assigned_user TEXT,
+             status TEXT)''')
+conn.commit()
+
+
+def create_task():
+    title = input("Enter task title: ")
+    description = input("Enter task description: ")
+    due_date = input("Enter task due date (YYYY-MM-DD): ")
+    priority = int(input("Enter task priority (1-5): "))
+    assigned_user = input("Enter assigned user: ")
+
+    c.execute('''INSERT INTO tasks (title, description, due_date, priority, assigned_user, status)
+                 VALUES (?, ?, ?, ?, ?, ?)''', (title, description, due_date, priority, assigned_user, "pending"))
+    conn.commit()
+    print("Task created successfully!")
+
+
+def view_tasks():
+    c.execute("SELECT * FROM tasks")
+    tasks = c.fetchall()
+    if tasks:
+        for task in tasks:
+            print(f"Task ID: {task[0]}")
+            print(f"Title: {task[1]}")
+            print(f"Description: {task[2]}")
+            print(f"Due Date: {task[3]}")
+            print(f"Priority: {task[4]}")
+            print(f"Assigned User: {task[5]}")
+            print(f"Status: {task[6]}")
+            print()
+    else:
+        print("No tasks found.")
+
+
+def update_task_status():
+    task_id = int(input("Enter the task ID to update its status: "))
+    status = input("Enter the new status: ")
+
+    c.execute("UPDATE tasks SET status = ? WHERE id = ?", (status, task_id))
+    conn.commit()
+    print("Task status updated successfully!")
+
+
+def delete_task():
+    task_id = int(input("Enter the task ID to delete: "))
+
+    c.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    conn.commit()
+    print("Task deleted successfully!")
+
+
+def main_menu():
+    while True:
+        print("==== Task Management System ====")
+        print("1. Create Task")
+        print("2. View Tasks")
+        print("3. Update Task Status")
+        print("4. Delete Task")
+        print("5. Exit")
+
+        choice = input("Enter your choice (1-5): ")
+        if choice == "1":
+            create_task()
+        elif choice == "2":
+            view_tasks()
+        elif choice == "3":
+            update_task_status()
+        elif choice == "4":
+            delete_task()
+        elif choice == "5":
+            print("Exiting Task Management System...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == '__main__':
+    main_menu()
+
+# Close the database connection
+conn.close()
